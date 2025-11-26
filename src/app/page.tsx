@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
-import { Download, Search, ChevronDown, ChevronRight } from "lucide-react"
+import { Download, Search, ChevronDown, ChevronRight, Moon, Sun } from "lucide-react"
 import { useState, useEffect } from "react"
 
 const items = [
@@ -54,6 +54,27 @@ const items = [
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("")
   const [expandedCategories, setExpandedCategories] = useState<string[]>([])
+  const [mounted, setMounted] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    // Check for saved theme preference or default to light mode
+    const savedTheme = localStorage.getItem('theme')
+    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      setIsDarkMode(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }, [isDarkMode])
 
   const filteredItems = items.filter(item =>
     item.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -95,7 +116,7 @@ export default function Home() {
       <span>
         {parts.map((part, index) => 
           part.toLowerCase() === highlight.toLowerCase() ? (
-            <mark key={index} className="bg-yellow-200 px-1 rounded">{part}</mark>
+            <mark key={index} className={`${isDarkMode ? 'bg-amber-500/30 text-amber-300 border-b-2 border-amber-400' : 'bg-gradient-to-r from-amber-200 to-amber-300 text-amber-900'} px-1 rounded animate-pulse font-medium`}>{part}</mark>
           ) : (
             part
           )
@@ -105,24 +126,36 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className={`min-h-screen transition-colors duration-500 ${isDarkMode ? 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900' : 'bg-gradient-to-br from-slate-50 to-blue-50'}`}>
       <div className="max-w-2xl mx-auto px-6 py-16">
         {/* Header */}
-        <header className="mb-16">
-          <h1 className="text-2xl font-light text-gray-900 mb-2">Storage Links</h1>
-          <p className="text-sm text-gray-600">Personal Download Links *Don't Use These*</p>
+        <header className={`mb-16 transition-all duration-700 transform ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <div className="flex items-center justify-between mb-4">
+            <h1 className={`text-3xl font-light ${isDarkMode ? 'text-slate-100' : 'text-slate-800'} animate-fade-in`}>Storage Links</h1>
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className={`p-2 rounded-full transition-all duration-300 ${isDarkMode ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-white text-slate-600 hover:bg-slate-100'} shadow-md hover:shadow-lg transform hover:scale-105`}
+            >
+              {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </button>
+          </div>
+          <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} animate-fade-in-delay`}>Personal Download Links *Don't Use These*</p>
         </header>
 
         {/* Search */}
-        <div className="mb-8">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <div className={`mb-8 transition-all duration-700 delay-100 transform ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <div className="relative group">
+            <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 transition-all duration-300 ${isDarkMode ? 'text-slate-400 group-hover:text-blue-400 group-focus-within:text-blue-400' : 'text-slate-400 group-hover:text-blue-500 group-focus-within:text-blue-500'} ${searchTerm ? (isDarkMode ? 'text-blue-400' : 'text-blue-500') : ''}`} />
             <input
               type="text"
               placeholder="Search items..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+              className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-300 hover:scale-[1.02] shadow-sm ${
+                isDarkMode 
+                  ? 'bg-slate-800/50 border-slate-700 focus:ring-blue-500 focus:border-blue-500 hover:border-slate-600 text-slate-100 placeholder-slate-500' 
+                  : 'bg-white/80 border-slate-200 focus:ring-blue-400 focus:border-blue-400 hover:border-slate-300 text-slate-900 placeholder-slate-500'
+              } backdrop-blur-sm`}
             />
           </div>
         </div>
@@ -130,31 +163,49 @@ export default function Home() {
         {/* Items List by Category */}
         <main className="space-y-8">
           {Object.keys(groupedItems).length > 0 ? (
-            Object.entries(groupedItems).map(([category, categoryItems]) => (
-              <div key={category}>
+            Object.entries(groupedItems).map(([category, categoryItems], categoryIndex) => (
+              <div 
+                key={category} 
+                className={`transition-all duration-700 transform ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}
+                style={{ transitionDelay: `${200 + categoryIndex * 100}ms` }}
+              >
                 {/* Category Header */}
                 <button
                   onClick={() => toggleCategory(category)}
-                  className="flex items-center gap-2 mb-4 text-left w-full group"
+                  className={`flex items-center gap-2 mb-4 text-left w-full group -mx-2 px-3 py-2 rounded-xl transition-all duration-200 ${
+                    isDarkMode 
+                      ? 'hover:bg-slate-800/50' 
+                      : 'hover:bg-blue-50/50'
+                  }`}
                 >
-                  {expandedCategories.includes(category) ? (
-                    <ChevronDown className="h-4 w-4 text-gray-500" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 text-gray-500" />
-                  )}
-                  <h2 className="text-lg font-medium text-gray-900 group-hover:text-gray-700">
+                  <div className="transition-transform duration-300">
+                    {expandedCategories.includes(category) ? (
+                      <ChevronDown className={`h-4 w-4 transition-colors duration-200 ${isDarkMode ? 'text-slate-400 group-hover:text-blue-400' : 'text-slate-500 group-hover:text-blue-600'}`} />
+                    ) : (
+                      <ChevronRight className={`h-4 w-4 transition-colors duration-200 ${isDarkMode ? 'text-slate-400 group-hover:text-blue-400' : 'text-slate-500 group-hover:text-blue-600'}`} />
+                    )}
+                  </div>
+                  <h2 className={`text-lg font-medium transition-colors duration-200 ${isDarkMode ? 'text-slate-100 group-hover:text-blue-400' : 'text-slate-800 group-hover:text-blue-600'}`}>
                     {category} ({categoryItems.length})
                   </h2>
                 </button>
 
                 {/* Items in Category */}
-                {expandedCategories.includes(category) && (
+                <div className={`overflow-hidden transition-all duration-500 ${expandedCategories.includes(category) ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
                   <div className="ml-6 space-y-4">
                     {categoryItems.map((item, index) => (
-                      <div key={index} className="border-b border-gray-200 pb-4">
+                      <div 
+                        key={index} 
+                        className={`border rounded-xl p-4 transition-all duration-300 hover:translate-x-1 transform backdrop-blur-sm ${
+                          isDarkMode 
+                            ? 'border-slate-700/60 bg-slate-800/40 hover:bg-slate-700/40 hover:border-blue-500/40 hover:shadow-blue-500/10' 
+                            : 'border-slate-200/60 bg-white/60 hover:bg-blue-50/40 hover:border-blue-200/60 hover:shadow-md'
+                        } hover:shadow-md`}
+                        style={{ transitionDelay: `${index * 50}ms` }}
+                      >
                         <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="text-lg font-medium text-gray-900">
+                          <div className="flex-1">
+                            <h3 className={`text-lg font-medium transition-colors duration-200 ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>
                               {highlightText(item.title, searchTerm)}
                             </h3>
                           </div>
@@ -162,30 +213,81 @@ export default function Home() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleDownload(item.downloadUrl, item.title)}
-                            className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                            className={`transition-all duration-200 hover:scale-105 transform backdrop-blur-sm ${
+                              isDarkMode 
+                                ? 'border-blue-600 text-blue-400 hover:bg-blue-600/20 hover:border-blue-500 hover:text-blue-300 bg-slate-800/50' 
+                                : 'border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300 hover:shadow-md bg-white/80'
+                            }`}
                           >
-                            <Download className="h-4 w-4 mr-2" />
+                            <Download className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:translate-y-0.5" />
                             Download
                           </Button>
                         </div>
                       </div>
                     ))}
                   </div>
-                )}
+                </div>
               </div>
             ))
           ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No items found matching "{searchTerm}"</p>
+            <div className={`text-center py-8 transition-all duration-300 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+              <p className={`animate-pulse ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>No items found matching "{searchTerm}"</p>
             </div>
           )}
         </main>
 
         {/* Footer */}
-        <footer className="mt-16 pt-8 border-t border-gray-200">
-          <p className="text-sm text-gray-600 text-center">Don't Download anything unless you know me</p>
+        <footer className={`mt-16 pt-8 border-t transition-all duration-700 delay-300 transform ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} ${
+          isDarkMode ? 'border-slate-700/60' : 'border-slate-200/60'
+        }`}>
+          <p className={`text-sm text-center transition-colors duration-200 ${isDarkMode ? 'text-slate-400 hover:text-slate-300' : 'text-slate-600 hover:text-slate-700'}`}>Don't Download anything unless you know me</p>
         </footer>
       </div>
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+
+        .animate-fade-in-delay {
+          animation: fade-in 0.6s ease-out 0.2s both;
+        }
+
+        .delay-100 {
+          transition-delay: 100ms;
+        }
+
+        .delay-300 {
+          transition-delay: 300ms;
+        }
+
+        ${!isDarkMode ? `
+          mark {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #78350f;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(251, 191, 36, 0.3);
+          }
+        ` : `
+          mark {
+            background: rgba(245, 158, 11, 0.3);
+            color: #fcd34d;
+            font-weight: 500;
+            border-bottom: 2px solid #f59e0b;
+          }
+        `}
+      `}</style>
     </div>
   )
 }
