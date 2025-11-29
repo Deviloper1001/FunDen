@@ -5,55 +5,100 @@ import { Download, Search, ChevronDown, ChevronRight, Moon, Sun } from "lucide-r
 import { useState, useEffect } from "react"
 
 const items = [
+ { 
+    title: "Personal Information",
+    downloadUrl:"https://1024terabox.com/s/1nmWjYxJEduIjQ3SpF3QGog",
+    category: "Program",
+    subcategory: "Q Basic"
+  }, 
+
+ { 
+    title: "HI",
+    downloadUrl:"https://1024terabox.com/s/1zxcgaumrBZN5NuyryWsDdA",
+    category: "Program",
+    subcategory: "Q Basic"
+  }, 
+
+ { 
+    title: "Calculator",
+    downloadUrl:"https://1024terabox.com/s/1afVAXrq3ofLbzoEsn8RPHQ",
+    category: "Program",
+    subcategory: "Q Basic"
+  }, 
+
+  { 
+    title: "Html translator",
+    downloadUrl:"https://1024terabox.com/s/1KhEKPT3OzJxHMbV5OZ2VyA",
+    category: "Program",
+    subcategory: "Python"
+  },
+
+  { 
+    title: "Morse translator",
+    downloadUrl:"https://1024terabox.com/s/1sg6uvdaF4H-TivqMyGc96A",
+    category: "Program",
+    subcategory: "Python"
+  },
+  
   { 
     title: "Grand Theft Auto 4",
     downloadUrl:"https://1024terabox.com/s/113nEu5yfDNSO3V7bnW535w",
-    category: "Games"
+    category: "Games",
+    subcategory: "GTA"
   },  
   { 
     title: "Grand Theft Auto: San Andreas",
     downloadUrl: "https://1024terabox.com/s/1rFMGbIqxxNWUYcFTnZoWOA",
-    category: "Games"
+    category: "Games",
+    subcategory: "GTA"
   },
   {
     title: "Grand Theft Auto: Vice City",
     downloadUrl: "https://1024terabox.com/s/1nhru16Sn5AfBAF0VGjxSUg",
-    category: "Games"
+    category: "Games",
+    subcategory: "GTA"
   },
   {
     title: "BeamNG.drive",
     downloadUrl: "https://1024terabox.com/s/1JL5lDWTRIY85QBbkD6k7fg",
-    category: "Games"
+    category: "Games",
+    subcategory: ""
   },
   {
     title: "Getting Over It",
     downloadUrl: "https://1024terabox.com/s/19ioNoy8tywEfrbiGKv1K5w",
-    category: "Games"
+    category: "Games",
+    subcategory: ""
   },
   {
     title: "Nokia game",
     downloadUrl:"https://drive.google.com/file/d/1UDwRpGQ2hRsE1IqzOdfIRT54wUkFo_Ly/view?usp=sharing",
-    category: "Games"
+    category: "Games",
+    subcategory: ""
   },
   {title: "Harry potter-Book Series",
    downloadUrl:"https://drive.google.com/drive/folders/1Zla_6ilK2KdyyeDBvc_DZEemWvHPt37R?usp=sharing",
-   category: "Books"
+   category: "Books",
+   subcategory: ""
   },
   {
     title:"Harry Potter-Movie Series",
     downloadUrl:"https://1024terabox.com/s/1mLoO30vE9xsBGOtv6klNlQ",
-    category: "Movies"
+    category: "Movies",
+    subcategory: "Fantasy"
   },
   {
   title:"Boards Study Material",
   downloadUrl:"https://drive.google.com/drive/folders/1m0OqitYOuBMH_8t12k5X-WGuFYfmafv2?usp=sharing",
-  category: "Education"
+  category: "Education",
+  subcategory: "Study Guides"
   }
 ]
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("")
   const [expandedCategories, setExpandedCategories] = useState<string[]>([])
+  const [expandedSubcategories, setExpandedSubcategories] = useState<string[]>([])
   const [mounted, setMounted] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
 
@@ -82,17 +127,28 @@ export default function Home() {
 
   const groupedItems = filteredItems.reduce((acc, item) => {
     if (!acc[item.category]) {
-      acc[item.category] = []
+      acc[item.category] = {}
     }
-    acc[item.category].push(item)
+    if (!acc[item.category][item.subcategory]) {
+      acc[item.category][item.subcategory] = []
+    }
+    acc[item.category][item.subcategory].push(item)
     return acc
-  }, {} as Record<string, typeof items>)
+  }, {} as Record<string, Record<string, typeof items>>)
 
   // When searching, expand all categories that have matching items
   useEffect(() => {
     if (searchTerm) {
       const categoriesWithMatches = Object.keys(groupedItems)
       setExpandedCategories(categoriesWithMatches)
+      // Also expand all subcategories with matches
+      const subcategoriesWithMatches = new Set<string>()
+      categoriesWithMatches.forEach(category => {
+        Object.keys(groupedItems[category]).forEach(subcategory => {
+          subcategoriesWithMatches.add(`${category}-${subcategory}`)
+        })
+      })
+      setExpandedSubcategories(Array.from(subcategoriesWithMatches))
     }
   }, [searchTerm, groupedItems])
 
@@ -101,6 +157,15 @@ export default function Home() {
       prev.includes(category)
         ? prev.filter(c => c !== category)
         : [...prev, category]
+    )
+  }
+
+  const toggleSubcategory = (category: string, subcategory: string) => {
+    const key = `${category}-${subcategory}`
+    setExpandedSubcategories(prev =>
+      prev.includes(key)
+        ? prev.filter(k => k !== key)
+        : [...prev, key]
     )
   }
 
@@ -163,7 +228,7 @@ export default function Home() {
         {/* Items List by Category */}
         <main className="space-y-8">
           {Object.keys(groupedItems).length > 0 ? (
-            Object.entries(groupedItems).map(([category, categoryItems], categoryIndex) => (
+            Object.entries(groupedItems).map(([category, subcategories], categoryIndex) => (
               <div 
                 key={category} 
                 className={`transition-all duration-700 transform ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}
@@ -186,47 +251,81 @@ export default function Home() {
                     )}
                   </div>
                   <h2 className={`text-lg font-medium transition-colors duration-200 ${isDarkMode ? 'text-slate-100 group-hover:text-blue-400' : 'text-slate-800 group-hover:text-blue-600'}`}>
-                    {category} ({categoryItems.length})
+                    {category} ({Object.values(subcategories).reduce((sum, sub) => sum + sub.length, 0)})
                   </h2>
                 </button>
 
-                {/* Items in Category */}
-                <div className={`overflow-hidden transition-all duration-500 ${expandedCategories.includes(category) ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                  <div className="ml-6 space-y-4">
-                    {categoryItems.map((item, index) => (
+                {/* Subcategories */}
+                {expandedCategories.includes(category) && (
+                  <div className="ml-6 space-y-6">
+                    {Object.entries(subcategories).map(([subcategory, subcategoryItems], subcategoryIndex) => (
                       <div 
-                        key={index} 
-                        className={`border rounded-xl p-4 transition-all duration-300 hover:translate-x-1 transform backdrop-blur-sm ${
-                          isDarkMode 
-                            ? 'border-slate-700/60 bg-slate-800/40 hover:bg-slate-700/40 hover:border-blue-500/40 hover:shadow-blue-500/10' 
-                            : 'border-slate-200/60 bg-white/60 hover:bg-blue-50/40 hover:border-blue-200/60 hover:shadow-md'
-                        } hover:shadow-md`}
-                        style={{ transitionDelay: `${index * 50}ms` }}
+                        key={subcategory} 
+                        className="transition-all duration-500"
+                        style={{ transitionDelay: `${subcategoryIndex * 50}ms` }}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <h3 className={`text-lg font-medium transition-colors duration-200 ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>
-                              {highlightText(item.title, searchTerm)}
-                            </h3>
+                        {/* Subcategory Header */}
+                        <button
+                          onClick={() => toggleSubcategory(category, subcategory)}
+                          className={`flex items-center gap-2 mb-3 text-left w-full group -mx-1 px-2 py-1 rounded-lg transition-all duration-200 ${
+                            isDarkMode 
+                              ? 'hover:bg-slate-700/50' 
+                              : 'hover:bg-slate-100/50'
+                          }`}
+                        >
+                          <div className="transition-transform duration-300">
+                            {expandedSubcategories.includes(`${category}-${subcategory}`) ? (
+                              <ChevronDown className={`h-3 w-3 transition-colors duration-200 ${isDarkMode ? 'text-slate-500 group-hover:text-blue-300' : 'text-slate-400 group-hover:text-blue-500'}`} />
+                            ) : (
+                              <ChevronRight className={`h-3 w-3 transition-colors duration-200 ${isDarkMode ? 'text-slate-500 group-hover:text-blue-300' : 'text-slate-400 group-hover:text-blue-500'}`} />
+                            )}
                           </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDownload(item.downloadUrl, item.title)}
-                            className={`transition-all duration-200 hover:scale-105 transform backdrop-blur-sm ${
-                              isDarkMode 
-                                ? 'border-blue-600 text-blue-400 hover:bg-blue-600/20 hover:border-blue-500 hover:text-blue-300 bg-slate-800/50' 
-                                : 'border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300 hover:shadow-md bg-white/80'
-                            }`}
-                          >
-                            <Download className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:translate-y-0.5" />
-                            Download
-                          </Button>
-                        </div>
+                          <h3 className={`text-base font-normal transition-colors duration-200 ${isDarkMode ? 'text-slate-200 group-hover:text-blue-300' : 'text-slate-600 group-hover:text-blue-500'}`}>
+                            {subcategory} ({subcategoryItems.length})
+                          </h3>
+                        </button>
+
+                        {/* Items in Subcategory */}
+                        {expandedSubcategories.includes(`${category}-${subcategory}`) && (
+                          <div className="ml-6 space-y-3">
+                            {subcategoryItems.map((item, index) => (
+                              <div 
+                                key={index} 
+                                className={`border rounded-xl p-3 transition-all duration-300 hover:translate-x-1 transform backdrop-blur-sm ${
+                                  isDarkMode 
+                                    ? 'border-slate-700/60 bg-slate-800/40 hover:bg-slate-700/40 hover:border-blue-500/40 hover:shadow-blue-500/10' 
+                                    : 'border-slate-200/60 bg-white/60 hover:bg-blue-50/40 hover:border-blue-200/60 hover:shadow-md'
+                                } hover:shadow-md`}
+                                style={{ transitionDelay: `${index * 30}ms` }}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1">
+                                    <h4 className={`text-base font-medium transition-colors duration-200 ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>
+                                      {highlightText(item.title, searchTerm)}
+                                    </h4>
+                                  </div>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDownload(item.downloadUrl, item.title)}
+                                    className={`transition-all duration-200 hover:scale-105 transform backdrop-blur-sm ${
+                                      isDarkMode 
+                                        ? 'border-blue-600 text-blue-400 hover:bg-blue-600/20 hover:border-blue-500 hover:text-blue-300 bg-slate-800/50' 
+                                        : 'border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300 hover:shadow-md bg-white/80'
+                                    }`}
+                                  >
+                                    <Download className="h-3 w-3 mr-2 transition-transform duration-200 group-hover:translate-y-0.5" />
+                                    Download
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
-                </div>
+                )}
               </div>
             ))
           ) : (
