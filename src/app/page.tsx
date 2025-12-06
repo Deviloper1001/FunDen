@@ -3,92 +3,8 @@
 import { Button } from "@/components/ui/button"
 import { Download, Search, ChevronDown, ChevronRight, Moon, Sun } from "lucide-react"
 import { useState, useEffect } from "react"
-
-const items = [
- { 
-    title: "Personal Information",
-    downloadUrl:"https://1024terabox.com/s/1nmWjYxJEduIjQ3SpF3QGog",
-    category: "Program",
-    subcategory: "Q Basic"
-  }, 
-
- { 
-    title: "HI",
-    downloadUrl:"https://1024terabox.com/s/1zxcgaumrBZN5NuyryWsDdA",
-    category: "Program",
-    subcategory: "Q Basic"
-  }, 
-
- { 
-    title: "Calculator",
-    downloadUrl:"https://1024terabox.com/s/1afVAXrq3ofLbzoEsn8RPHQ",
-    category: "Program",
-    subcategory: "Q Basic"
-  }, 
-
-  { 
-    title: "Html translator",
-    downloadUrl:"https://1024terabox.com/s/1KhEKPT3OzJxHMbV5OZ2VyA",
-    category: "Program",
-    subcategory: "Python"
-  },
-
-  { 
-    title: "Morse translator",
-    downloadUrl:"https://1024terabox.com/s/1sg6uvdaF4H-TivqMyGc96A",
-    category: "Program",
-    subcategory: "Python"
-  },
-  
-  { 
-    title: "Grand Theft Auto 4",
-    downloadUrl:"https://1024terabox.com/s/113nEu5yfDNSO3V7bnW535w",
-    category: "Games",
-    subcategory: "GTA"
-  },  
-  { 
-    title: "Grand Theft Auto: San Andreas",
-    downloadUrl: "https://1024terabox.com/s/1rFMGbIqxxNWUYcFTnZoWOA",
-    category: "Games",
-    subcategory: "GTA"
-  },
-  {
-    title: "Grand Theft Auto: Vice City",
-    downloadUrl: "https://1024terabox.com/s/1nhru16Sn5AfBAF0VGjxSUg",
-    category: "Games",
-    subcategory: "GTA"
-  },
-  {
-    title: "BeamNG.drive",
-    downloadUrl: "https://1024terabox.com/s/1JL5lDWTRIY85QBbkD6k7fg",
-    category: "Games",
-  },
-  {
-    title: "Getting Over It",
-    downloadUrl: "https://1024terabox.com/s/19ioNoy8tywEfrbiGKv1K5w",
-    category: "Games",
-  },
-  {
-    title: "Nokia game",
-    downloadUrl:"https://drive.google.com/file/d/1UDwRpGQ2hRsE1IqzOdfIRT54wUkFo_Ly/view?usp=sharing",
-    category: "Games",
- 
-  },
-  {title: "Harry potter-Book Series",
-   downloadUrl:"https://drive.google.com/drive/folders/1Zla_6ilK2KdyyeDBvc_DZEemWvHPt37R?usp=sharing",
-   category: "Books",
-  },
-  {
-    title:"Harry Potter-Movie Series",
-    downloadUrl:"https://1024terabox.com/s/1mLoO30vE9xsBGOtv6klNlQ",
-    category: "Movies",
-  },
-  {
-  title:"Boards Study Material",
-  downloadUrl:"https://drive.google.com/drive/folders/1m0OqitYOuBMH_8t12k5X-WGuFYfmafv2?usp=sharing",
-  category: "Education",
-  }
-]
+import { Analytics } from '@vercel/analytics/react'
+import { items, type StorageItem } from '../data/items'
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -102,7 +18,7 @@ export default function Home() {
   const [passwordError, setPasswordError] = useState("")
 
   // Simple password protection
-  const correctPassword = "arkadevelopments" // Change this to your desired password
+  const correctPassword = "fun2024" // Change this to your desired password
 
   useEffect(() => {
     setMounted(true)
@@ -117,6 +33,14 @@ export default function Home() {
       setIsAuthenticated(true)
       setShowPassword(false)
     }
+    
+    // Track page view
+    Analytics.track('page_view', {
+      page: 'home',
+      authenticated: authStatus === 'true',
+      theme: savedTheme || 'light',
+      category: 'page_view'
+    })
   }, [])
 
   useEffect(() => {
@@ -127,6 +51,12 @@ export default function Home() {
       document.documentElement.classList.remove('dark')
       localStorage.setItem('theme', 'light')
     }
+    
+    // Track theme toggle
+    Analytics.track('theme_change', {
+      theme: isDarkMode ? 'dark' : 'light',
+      category: 'user_interaction'
+    })
   }, [isDarkMode])
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
@@ -136,9 +66,19 @@ export default function Home() {
       setShowPassword(false)
       setPasswordError("")
       sessionStorage.setItem('authenticated', 'true')
+      // Track successful login
+      Analytics.track('login_success', {
+        method: 'password',
+        category: 'authentication'
+      })
     } else {
       setPasswordError("Incorrect password")
       setTimeout(() => setPasswordError(""), 3000)
+      // Track failed login
+      Analytics.track('login_failed', {
+        error: 'incorrect_password',
+        category: 'authentication'
+      })
     }
   }
 
@@ -147,6 +87,11 @@ export default function Home() {
     setShowPassword(true)
     setPassword("")
     sessionStorage.removeItem('authenticated')
+    
+    // Track logout event
+    Analytics.track('logout', {
+      category: 'authentication'
+    })
   }
 
   const filteredItems = items.filter(item =>
@@ -187,6 +132,14 @@ export default function Home() {
         })
       })
       setExpandedSubcategories(Array.from(subcategoriesWithMatches))
+      
+      // Track search event
+      Analytics.track('search', {
+        search_term: searchTerm,
+        results_count: filteredItems.length,
+        categories_matched: categoriesWithMatches.length,
+        category: 'search'
+      })
     }
   }, [searchTerm, groupedItems])
 
@@ -196,6 +149,12 @@ export default function Home() {
         ? prev.filter(c => c !== category)
         : [...prev, category]
     )
+    // Track category toggle
+    Analytics.track('category_toggle', {
+      category_name: category,
+      action: prev.includes(category) ? 'collapse' : 'expand',
+      category: 'navigation'
+    })
   }
 
   const toggleSubcategory = (category: string, subcategory: string) => {
@@ -205,10 +164,23 @@ export default function Home() {
         ? prev.filter(k => k !== key)
         : [...prev, key]
     )
+    // Track subcategory toggle
+    Analytics.track('subcategory_toggle', {
+      category_name: category,
+      subcategory_name: subcategory,
+      action: prev.includes(key) ? 'collapse' : 'expand',
+      category: 'navigation'
+    })
   }
 
   const handleDownload = (url: string, title: string) => {
     window.open(url, '_blank')
+    // Track download event
+    Analytics.track('download', {
+      item_title: title,
+      item_url: url,
+      category: 'file_download'
+    })
   }
 
   const highlightText = (text: string, highlight: string) => {
