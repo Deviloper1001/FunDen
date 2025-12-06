@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Download, Search, ChevronDown, ChevronRight, Moon, Sun } from "lucide-react"
 import { useState, useEffect } from "react"
 import { items, type StorageItem } from '../data/items'
+import { track } from '@vercel/analytics';
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -34,7 +35,7 @@ export default function Home() {
     }
     
     // Track page view
-    Analytics.track('page_view', {
+    track('page_view', {
       page: 'home',
       authenticated: authStatus === 'true',
       theme: savedTheme || 'light',
@@ -52,7 +53,7 @@ export default function Home() {
     }
     
     // Track theme toggle
-    Analytics.track('theme_change', {
+    track('theme_change', {
       theme: isDarkMode ? 'dark' : 'light',
       category: 'user_interaction'
     })
@@ -66,7 +67,7 @@ export default function Home() {
       setPasswordError("")
       sessionStorage.setItem('authenticated', 'true')
       // Track successful login
-      Analytics.track('login_success', {
+      track('login_success', {
         method: 'password',
         category: 'authentication'
       })
@@ -74,7 +75,7 @@ export default function Home() {
       setPasswordError("Incorrect password")
       setTimeout(() => setPasswordError(""), 3000)
       // Track failed login
-      Analytics.track('login_failed', {
+      track('login_failed', {
         error: 'incorrect_password',
         category: 'authentication'
       })
@@ -88,7 +89,7 @@ export default function Home() {
     sessionStorage.removeItem('authenticated')
     
     // Track logout event
-    Analytics.track('logout', {
+    track('logout', {
       category: 'authentication'
     })
   }
@@ -133,7 +134,7 @@ export default function Home() {
       setExpandedSubcategories(Array.from(subcategoriesWithMatches))
       
       // Track search event
-      Analytics.track('search', {
+      track('search', {
         search_term: searchTerm,
         results_count: filteredItems.length,
         categories_matched: categoriesWithMatches.length,
@@ -149,7 +150,7 @@ export default function Home() {
         : [...prev, category]
     )
     // Track category toggle
-    Analytics.track('category_toggle', {
+    track('category_toggle', {
       category_name: category,
       action: prev.includes(category) ? 'collapse' : 'expand',
       category: 'navigation'
@@ -164,7 +165,7 @@ export default function Home() {
         : [...prev, key]
     )
     // Track subcategory toggle
-    Analytics.track('subcategory_toggle', {
+    track('subcategory_toggle', {
       category_name: category,
       subcategory_name: subcategory,
       action: prev.includes(key) ? 'collapse' : 'expand',
@@ -175,7 +176,7 @@ export default function Home() {
   const handleDownload = (url: string, title: string) => {
     window.open(url, '_blank')
     // Track download event
-    Analytics.track('download', {
+    track('download', {
       item_title: title,
       item_url: url,
       category: 'file_download'
