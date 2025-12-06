@@ -112,7 +112,7 @@ export const getAllCategories = () => {
 }
 
 export const getAllSubcategories = (category: string) => {
-  return [...new Set(items
+  return [...new Set(items)
     .filter(item => item.category === category)
     .map(item => item.subcategory)
     .filter(Boolean)
