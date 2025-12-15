@@ -110,7 +110,7 @@ export const items: StorageItem[] = [
   {
     title:"Personal Photos",
     downloadUrl:"https://1024terabox.com/s/1xSVntnvjyuwD9SYYHSLPug",//Password:2302
-    Category:"Personal",
+    category:"Personal",
     subcategory:"Photos",
   },
   {
