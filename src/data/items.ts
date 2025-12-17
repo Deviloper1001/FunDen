@@ -115,7 +115,7 @@ export const items: StorageItem[] = [
   },
   {
     title:"NyxCipher",
-    downloadUrl:"https://1024terabox.com/s/1_z8ri77yTIklslABIK4jSg",//Password:2302
+    downloadUrl:"https://github.com/Deviloper1001/NyxCipher",
     category:"Personal",
     subcategory:"Program",
   },
