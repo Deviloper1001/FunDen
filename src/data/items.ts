@@ -87,7 +87,7 @@ export const items: StorageItem[] = [
   },
   {
   title:"Boards Study Material",
-  downloadUrl:"https://drive.google.com/drive/folders/1m0OqitYOuBMH_8t12k5X-WGuFYfmafv2?usp=sharing",
+  downloadUrl:"https://drive.google.com/drive/folders/1_Ryplvc-KFTv6JusVIoL18zcz6QWC8dy?usp=sharing",
   category: "Education",
   },
   {
